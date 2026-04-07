@@ -1,0 +1,8 @@
+[{
+  "modid": "saymynameessentials",
+  "name": "Say My Name Essentials",
+  "description": "Teleport, homes, TPA, messaging for Say My Name server",
+  "version": "1.0.0",
+  "mcversion": "1.7.10",
+  "authorList": ["Say My Name Team"]
+}]
