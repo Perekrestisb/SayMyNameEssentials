@@ -26,6 +26,11 @@ public class CmdSetHome extends CommandBase {
     }
 
     @Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return true;
+    }
+
+    @Override
     public void processCommand(ICommandSender sender, String[] args) {
         EntityPlayerMP player = (EntityPlayerMP) sender;
         String name = args.length > 0 ? args[0].toLowerCase() : "home";
