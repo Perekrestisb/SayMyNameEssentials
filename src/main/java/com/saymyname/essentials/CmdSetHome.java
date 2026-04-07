@@ -34,7 +34,7 @@ public class CmdSetHome extends CommandBase {
         Map<String, double[]> homes = DataStore.getHomes(uuid);
 
         if (homes.containsKey(name)) {
-            homes.put(name, new double[]{player.posX, player.posY, player.posZ, player.dimension});
+            homes.put(name, new double[]{player.posX, player.posY, player.posZ, player.dimension, player.rotationYaw, player.rotationPitch});
             DataStore.saveHomes(uuid, homes);
             player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Дом \"" + name + "\" обновлён!"));
             return;
@@ -45,7 +45,7 @@ public class CmdSetHome extends CommandBase {
             return;
         }
 
-        homes.put(name, new double[]{player.posX, player.posY, player.posZ, player.dimension});
+        homes.put(name, new double[]{player.posX, player.posY, player.posZ, player.dimension, player.rotationYaw, player.rotationPitch});
         DataStore.saveHomes(uuid, homes);
         player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Дом \"" + name + "\" сохранён!"));
     }

@@ -57,7 +57,7 @@ public class CmdTpaccept extends CommandBase {
         CmdTpa.requestTimestamps.remove(uuid);
 
         DataStore.setBackLocation(requester.getUniqueID().toString(), requester.posX, requester.posY, requester.posZ, requester.dimension);
-        TpUtil.teleport(requester, player.posX, player.posY, player.posZ, player.dimension);
+        TpUtil.teleport(requester, player.posX, player.posY, player.posZ, player.dimension, requester.rotationYaw, requester.rotationPitch);
 
         player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Запрос на телепортацию принят!"));
         requester.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Телепортация к " + player.getCommandSenderName() + "!"));

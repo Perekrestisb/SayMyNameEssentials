@@ -35,7 +35,7 @@ public class CmdBack extends CommandBase {
         }
 
         DataStore.setBackLocation(uuid, player.posX, player.posY, player.posZ, player.dimension);
-        TpUtil.teleport(player, back[0], back[1], back[2], (int) back[3]);
+        TpUtil.teleport(player, back[0], back[1], back[2], (int) back[3], player.rotationYaw, player.rotationPitch);
         player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Телепортация на предыдущую позицию!"));
     }
 }

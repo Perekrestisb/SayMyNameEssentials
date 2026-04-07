@@ -37,7 +37,7 @@ public class CmdSpawn extends CommandBase {
         double y = overworld.getSpawnPoint().posY;
         double z = overworld.getSpawnPoint().posZ + 0.5;
 
-        TpUtil.teleport(player, x, y, z, 0);
+        TpUtil.teleport(player, x, y, z, 0, player.rotationYaw, player.rotationPitch);
         player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Телепортация на спавн!"));
     }
 }

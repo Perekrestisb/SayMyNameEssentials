@@ -40,7 +40,9 @@ public class CmdHome extends CommandBase {
 
         double[] pos = homes.get(name);
         DataStore.setBackLocation(uuid, player.posX, player.posY, player.posZ, player.dimension);
-        TpUtil.teleport(player, pos[0], pos[1], pos[2], (int) pos[3]);
+        float yaw = pos.length > 4 ? (float) pos[4] : player.rotationYaw;
+        float pitch = pos.length > 5 ? (float) pos[5] : player.rotationPitch;
+        TpUtil.teleport(player, pos[0], pos[1], pos[2], (int) pos[3], yaw, pitch);
         player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Телепортация к дому \"" + name + "\"!"));
     }
 }

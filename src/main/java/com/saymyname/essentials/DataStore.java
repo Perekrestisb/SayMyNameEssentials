@@ -54,6 +54,38 @@ public class DataStore {
         backLocations.put(p.getCommandSenderName(), new double[]{p.posX, p.posY, p.posZ, p.dimension});
     }
 
+    // --- UUID-based accessors used by commands ---
+
+    public static Map<String, double[]> getHomes(String player) {
+        Map<String, double[]> h = homes.get(player);
+        if (h == null) {
+            h = new HashMap<String, double[]>();
+            homes.put(player, h);
+        }
+        return h;
+    }
+
+    public static void saveHomes(String player, Map<String, double[]> playerHomes) {
+        homes.put(player, playerHomes);
+        saveHomes();
+    }
+
+    public static void setBackLocation(String player, double x, double y, double z, int dim) {
+        backLocations.put(player, new double[]{x, y, z, dim});
+    }
+
+    public static double[] getBackLocation(String player) {
+        return backLocations.get(player);
+    }
+
+    public static void setReplyTarget(String player, String target) {
+        replyTargets.put(player, target);
+    }
+
+    public static String getReplyTarget(String player) {
+        return replyTargets.get(player);
+    }
+
     private static void saveHomes() {
         try {
             Writer w = new FileWriter(homesFile);
