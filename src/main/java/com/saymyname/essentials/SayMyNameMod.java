@@ -19,5 +19,6 @@ public class SayMyNameMod {
         event.registerServerCommand(new CmdTpdeny());
         event.registerServerCommand(new CmdMsg());
         event.registerServerCommand(new CmdReply());
+        event.registerServerCommand(new CmdRtp());
     }
 }
