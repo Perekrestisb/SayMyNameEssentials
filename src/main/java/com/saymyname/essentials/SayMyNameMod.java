@@ -4,16 +4,20 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.1.0", acceptableRemoteVersions = "*")
+import java.io.File;
+
+@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.2.0", acceptableRemoteVersions = "*")
 public class SayMyNameMod {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         MuttonHandler.init();
+        KeepInvHandler.init(new File("config"));
     }
 
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CmdKeepInv());
         event.registerServerCommand(new CmdSetHome());
         event.registerServerCommand(new CmdHome());
         event.registerServerCommand(new CmdDelHome());
