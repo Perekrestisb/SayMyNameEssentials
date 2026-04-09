@@ -6,6 +6,8 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
+import net.minecraft.potion.Potion;
+import net.minecraft.potion.PotionEffect;
 import net.minecraft.world.World;
 
 import java.util.Random;
@@ -49,7 +51,9 @@ public class CmdRtp extends CommandBase {
             int y = findSafeY(world, x, z);
             if (y > 0) {
                 TpUtil.teleport(player, x + 0.5, y + 1.0, z + 0.5, 0, player.rotationYaw, player.rotationPitch);
-                TpUtil.msg(player, "Телепортация! (" + x + ", " + y + ", " + z + ")");
+                // 5 seconds of invulnerability after RTP
+                player.addPotionEffect(new PotionEffect(Potion.resistance.id, 100, 4));
+                TpUtil.msg(player, "Телепортация! (" + x + ", " + y + ", " + z + ") — 5 сек неуязвимости");
                 return;
             }
         }

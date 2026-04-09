@@ -48,6 +48,13 @@ public class CmdHome extends CommandBase {
         float yaw = pos.length > 4 ? (float) pos[4] : player.rotationYaw;
         float pitch = pos.length > 5 ? (float) pos[5] : player.rotationPitch;
         TpUtil.teleport(player, pos[0], pos[1], pos[2], (int) pos[3], yaw, pitch);
-        player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Телепортация к дому \"" + name + "\"!"));
+
+        // Set spawn point to home location (same dimension only for overworld)
+        if ((int) pos[3] == 0) {
+            player.setSpawnChunk(new net.minecraft.util.ChunkCoordinates(
+                (int) pos[0], (int) pos[1], (int) pos[2]), true);
+        }
+
+        player.addChatMessage(new ChatComponentText(EnumChatFormatting.GREEN + "Телепортация к дому \"" + name + "\"! Точка спавна обновлена."));
     }
 }
