@@ -1,10 +1,16 @@
 package com.saymyname.essentials;
 
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
-@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.0.0", acceptableRemoteVersions = "*")
+@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.1.0", acceptableRemoteVersions = "*")
 public class SayMyNameMod {
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        MuttonHandler.init();
+    }
 
     @Mod.EventHandler
     public void serverStarting(FMLServerStartingEvent event) {
