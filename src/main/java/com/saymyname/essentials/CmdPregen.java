@@ -9,42 +9,56 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.world.WorldServer;
 
+import java.util.logging.Logger;
+
 /**
  * /pregen <radius> [x] [z] - pregenerates chunks around a point.
- * Processes chunks on the server tick to avoid ConcurrentModificationException.
+ * Runs on server tick, 1 chunk every 2 ticks (gentle mode).
+ * Output goes to server log only, not chat.
  */
 public class CmdPregen extends CommandBase {
     @Override public String getCommandName() { return "pregen"; }
     @Override public String getCommandUsage(ICommandSender s) { return "/pregen <radius> [centerX] [centerZ]"; }
     @Override public int getRequiredPermissionLevel() { return 4; }
 
-    // Pregen state (runs on server tick)
     private static boolean active = false;
     private static int startCX, startCZ, endCX, endCZ;
     private static int curCX, curCZ;
     private static int totalChunks, processedChunks, generatedChunks;
     private static long startTime;
-    private static final int CHUNKS_PER_TICK = 5;
+    private static int tickCounter = 0;
+    private static boolean registered = false;
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length >= 1 && args[0].equalsIgnoreCase("stop")) {
             if (active) {
                 active = false;
-                broadcast("\u00a7c[Pregen] Stopped. " + processedChunks + " processed, " + generatedChunks + " new.");
+                sender.addChatMessage(new ChatComponentText("\u00a7c[Pregen] Stopped. " + processedChunks + "/" + totalChunks + " processed, " + generatedChunks + " new."));
             } else {
                 sender.addChatMessage(new ChatComponentText("\u00a7cPregen not running."));
             }
             return;
         }
 
+        if (args.length >= 1 && args[0].equalsIgnoreCase("status")) {
+            if (active) {
+                double pct = (processedChunks * 100.0) / totalChunks;
+                sender.addChatMessage(new ChatComponentText(String.format(
+                    "\u00a7e[Pregen] %.1f%% (%d/%d) | %d new", pct, processedChunks, totalChunks, generatedChunks)));
+            } else {
+                sender.addChatMessage(new ChatComponentText("\u00a77[Pregen] Not running."));
+            }
+            return;
+        }
+
         if (active) {
-            sender.addChatMessage(new ChatComponentText("\u00a7cPregen already running! /pregen stop"));
+            sender.addChatMessage(new ChatComponentText("\u00a7cPregen running! /pregen stop | /pregen status"));
             return;
         }
 
         if (args.length < 1) {
-            sender.addChatMessage(new ChatComponentText("\u00a7c/pregen <radius> [x] [z]  |  /pregen stop"));
+            sender.addChatMessage(new ChatComponentText("\u00a7c/pregen <radius> [x] [z] | stop | status"));
             return;
         }
 
@@ -64,80 +78,73 @@ public class CmdPregen extends CommandBase {
         processedChunks = 0;
         generatedChunks = 0;
         startTime = System.currentTimeMillis();
+        tickCounter = 0;
         active = true;
 
-        broadcast(String.format("\u00a7a[Pregen] Starting: %d chunks, radius %d around (%d, %d)",
-                totalChunks, radius, cx, cz));
+        sender.addChatMessage(new ChatComponentText(String.format(
+            "\u00a7a[Pregen] Starting: %d chunks, radius %d around (%d, %d). Silent mode.",
+            totalChunks, radius, cx, cz)));
 
-        // Register tick handler if not already
-        FMLCommonHandler.instance().bus().register(this);
+        if (!registered) {
+            FMLCommonHandler.instance().bus().register(this);
+            registered = true;
+        }
     }
 
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !active) return;
 
+        // 1 chunk every 2 ticks = 10 chunks/sec (gentle)
+        tickCounter++;
+        if (tickCounter % 2 != 0) return;
+
         WorldServer world = MinecraftServer.getServer().worldServers[0];
 
-        for (int i = 0; i < CHUNKS_PER_TICK && active; i++) {
-            if (curCX > endCX) {
-                // Done!
-                active = false;
-                long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+        if (curCX > endCX) {
+            active = false;
+            long elapsed = (System.currentTimeMillis() - startTime) / 1000;
+            try {
+                world.theChunkProviderServer.unloadQueuedChunks();
+                world.saveAllChunks(true, null);
+            } catch (Exception e) {}
 
-                // Save and unload
-                try {
-                    world.theChunkProviderServer.unloadQueuedChunks();
-                    world.saveAllChunks(true, null);
-                } catch (Exception e) {}
+            // Log only (no chat spam)
+            System.out.println(String.format("[Pregen] Done! %d chunks, %d new in %dm %ds",
+                processedChunks, generatedChunks, elapsed / 60, elapsed % 60));
 
-                broadcast(String.format(
-                    "\u00a7a[Pregen] Done! %d chunks, %d new in %dm %ds. Run 'dynmap fullrender world' to update map.",
-                    processedChunks, generatedChunks, elapsed / 60, elapsed % 60));
-
-                // Start dynmap render automatically
+            // Auto-start dynmap render
+            try {
                 MinecraftServer.getServer().getCommandManager().executeCommand(
                     MinecraftServer.getServer(), "dynmap fullrender world");
-                return;
-            }
-
-            try {
-                if (!world.theChunkProviderServer.chunkExists(curCX, curCZ)) {
-                    world.theChunkProviderServer.loadChunk(curCX, curCZ);
-                    generatedChunks++;
-                }
-            } catch (Exception e) {
-                // Skip
-            }
-
-            processedChunks++;
-            curCZ++;
-            if (curCZ > endCZ) {
-                curCZ = startCZ;
-                curCX++;
-            }
-
-            // Unload periodically
-            if (processedChunks % 200 == 0) {
-                world.theChunkProviderServer.unloadQueuedChunks();
-            }
+            } catch (Exception e) {}
+            return;
         }
 
-        // Progress report every 500 chunks
-        if (processedChunks % 500 == 0 && processedChunks > 0) {
+        try {
+            if (!world.theChunkProviderServer.chunkExists(curCX, curCZ)) {
+                world.theChunkProviderServer.loadChunk(curCX, curCZ);
+                generatedChunks++;
+            }
+        } catch (Exception e) {}
+
+        processedChunks++;
+        curCZ++;
+        if (curCZ > endCZ) {
+            curCZ = startCZ;
+            curCX++;
+        }
+
+        // Unload periodically
+        if (processedChunks % 100 == 0) {
+            world.theChunkProviderServer.unloadQueuedChunks();
+        }
+
+        // Log progress every 2000 chunks (server log only, not chat)
+        if (processedChunks % 2000 == 0 && processedChunks > 0) {
             double pct = (processedChunks * 100.0) / totalChunks;
-            long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-            double cps = processedChunks * 1.0 / Math.max(elapsed, 1);
-            int eta = (int) ((totalChunks - processedChunks) / Math.max(cps, 0.1));
-
-            broadcast(String.format(
-                "\u00a7e[Pregen] %.1f%% (%d/%d) | \u00a7a%d new \u00a7e| ~%dm %ds left",
-                pct, processedChunks, totalChunks, generatedChunks, eta / 60, eta % 60));
+            System.out.println(String.format("[Pregen] %.1f%% (%d/%d) | %d new",
+                pct, processedChunks, totalChunks, generatedChunks));
         }
-    }
-
-    private void broadcast(String msg) {
-        MinecraftServer.getServer().getConfigurationManager()
-            .sendChatMsg(new ChatComponentText(msg));
     }
 }
