@@ -160,7 +160,10 @@ public class CmdClearlag extends CommandBase {
         if (BOSS_NAMES.contains(simpleName)) return true;
 
         // 5. Check if entity has a custom name (player-named mobs, quest mobs)
-        if (entity instanceof EntityLivingBase && ((EntityLivingBase) entity).hasCustomNameTag()) return true;
+        if (entity instanceof EntityLivingBase) {
+            String tag = ((EntityLivingBase) entity).getCustomNameTag();
+            if (tag != null && !tag.isEmpty()) return true;
+        }
 
         return false;
     }
