@@ -6,7 +6,7 @@ import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 import java.io.File;
 
-@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.2.0", acceptableRemoteVersions = "*")
+@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.3.0", acceptableRemoteVersions = "*")
 public class SayMyNameMod {
 
     @Mod.EventHandler
@@ -30,5 +30,6 @@ public class SayMyNameMod {
         event.registerServerCommand(new CmdMsg());
         event.registerServerCommand(new CmdReply());
         event.registerServerCommand(new CmdRtp());
+        event.registerServerCommand(new CmdClearlag());
     }
 }
