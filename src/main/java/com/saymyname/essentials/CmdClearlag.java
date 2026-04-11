@@ -3,7 +3,7 @@ package com.saymyname.essentials;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.boss.IBossDisplayData;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.item.EntityXPOrb;
@@ -160,10 +160,7 @@ public class CmdClearlag extends CommandBase {
         if (BOSS_NAMES.contains(simpleName)) return true;
 
         // 5. Check if entity has a custom name (player-named mobs, quest mobs)
-        if (entity instanceof EntityLivingBase) {
-            String tag = ((EntityLivingBase) entity).getCustomNameTag();
-            if (tag != null && !tag.isEmpty()) return true;
-        }
+        if (entity instanceof EntityLiving && ((EntityLiving) entity).hasCustomNameTag()) return true;
 
         return false;
     }
