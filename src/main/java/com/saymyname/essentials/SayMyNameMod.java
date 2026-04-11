@@ -5,6 +5,8 @@ import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
+import net.minecraftforge.common.MinecraftForge;
+
 import java.io.File;
 
 @Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.4.0", acceptableRemoteVersions = "*")
@@ -19,6 +21,7 @@ public class SayMyNameMod {
         MuttonHandler.init();
         KeepInvHandler.init(new File("config"));
         proxy.registerRenderers();
+        MinecraftForge.EVENT_BUS.register(new BloodMagicFix());
     }
 
     @Mod.EventHandler
