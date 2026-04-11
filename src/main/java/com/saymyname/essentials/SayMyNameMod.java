@@ -1,26 +1,24 @@
 package com.saymyname.essentials;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
-import cpw.mods.fml.relauncher.Side;
-import net.minecraftforge.common.MinecraftForge;
 
 import java.io.File;
 
-@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.3.0", acceptableRemoteVersions = "*")
+@Mod(modid = "saymynameessentials", name = "Say My Name Essentials", version = "1.4.0", acceptableRemoteVersions = "*")
 public class SayMyNameMod {
+
+    @SidedProxy(clientSide = "com.saymyname.essentials.ClientProxy",
+                serverSide = "com.saymyname.essentials.CommonProxy")
+    public static CommonProxy proxy;
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         MuttonHandler.init();
         KeepInvHandler.init(new File("config"));
-
-        // Register client-side HUD renderer
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
-            MinecraftForge.EVENT_BUS.register(new TimeHudRenderer());
-        }
+        proxy.registerRenderers();
     }
 
     @Mod.EventHandler
