@@ -1,8 +1,11 @@
 package com.saymyname.essentials;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.relauncher.Side;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.io.File;
 
@@ -13,6 +16,11 @@ public class SayMyNameMod {
     public void init(FMLInitializationEvent event) {
         MuttonHandler.init();
         KeepInvHandler.init(new File("config"));
+
+        // Register client-side HUD renderer
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            MinecraftForge.EVENT_BUS.register(new TimeHudRenderer());
+        }
     }
 
     @Mod.EventHandler
